@@ -12,6 +12,7 @@ const passport     = require('passport');
 require('dotenv').config();
 require('./config/mongoose-setup');
 require('./config/passport-setup');
+const router = express.Router()
 
 const app = express();
 // default value for title local
@@ -20,10 +21,6 @@ app.locals.title = 'Express - Generated with IronGenerator';
 // uncomment after placing your favicon in /public
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 app.use(logger('dev'));
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
 app.use(
   cors({
     // sends cookies across domains
@@ -32,6 +29,11 @@ app.use(
     origin: [ 'http://localhost:4200' ]
   })
 );
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(cookieParser());
+app.use(express.static(path.join(__dirname, 'public')));
+
 
 app.use(
   session({
@@ -44,7 +46,13 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
-const index = require('./routes/index');
-app.use('/', index);
+/**
+ * Begin Routes
+ */
+const pricesApi = require('./routes/main-router');
+app.use('/api', pricesApi);
 
+/**
+ * End Routes
+ */
 module.exports = app;
