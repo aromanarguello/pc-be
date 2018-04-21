@@ -7,10 +7,12 @@ const bodyParser   = require('body-parser');
 const cors         = require('cors');
 const session      = require('express-session');
 const passport     = require('passport');
+const LocalStrategy = require('passport-local').Strategy;
 
 
 require('dotenv').config();
 require('./config/mongoose-setup');
+require('./config/passport-setup');
 require('./config/passport-setup');
 const router = express.Router()
 
@@ -51,6 +53,9 @@ app.use(passport.session());
  */
 const pricesApi = require('./routes/main-router');
 app.use('/api', pricesApi);
+
+const auth = require('./routes/auth');
+app.use('/auth', auth)
 
 /**
  * End Routes
