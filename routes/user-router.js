@@ -3,60 +3,56 @@ const bcrypt          = require('bcrypt');
 const UserModel       = require('../models/user-models');
 const Passport        = require('passport');
 const router          = express.Router();
+const app             = express();
 
 /** 
  * POST /signup
  */
-router.post('/registrar', (req, res, next) => {
-    if (req.body.password === undefined ||
-        req.body.password.length < 6 ||
-        req.body.password.match(/[^a-z0-9]/i) === null) {
-        res.status(400).json({
-            error: 'Contraseña no cumple con los requerimientos'
-        });
-        return;
-    }
-    UserModel.findOne({
-            email: req.body.email
-        })
+router.post('/registrar', (req, res, next)=> {
+    if(req.body.password === undefined ||
+       req.body.password.length < 6){
+       res.status(400).json({ error: 'Password invalid'});
+       return;
+      }
+  
+      UserModel.findOne({ email: req.body.email })
         .then(userFromDb => {
-            if (userFromDb !== null) {
-                res.status(400).json({
-                    error: 'Este correo ha sido usado previamente'
-                });
-                return;
-            }
-            const salt = bcrypt.genSaltSync(10);
-            const scrambledPassword = bcrypt.hashSync(req.body.password, salt);
-            const theUser = new UserModel({
-                firstName: req.body.firstName,
-                lastName: req.body.lastName,
-                email: req.body.email,
-                encryptedPassword: scrambledPassword
-            });
-            return theUser.Save();
+          if(userFromDb !== null) {
+            res.status(400).json({ error: 'email is taken' });
+            return;
+          }
+          const salt              = bcrypt.genSaltSync(10);
+          const scrambledPassword = bcrypt.hashSync(req.body.password, salt);
+  
+          const theUser = new UserModel({
+            firstName:         req.body.firstName,
+            lastName:          req.body.lastName,
+            email:             req.body.email,
+            encryptedPassword: scrambledPassword
+          });
+  
+          return theUser.save();
         })
-        .then(userFromDb => {
+          .then( userFromDb => {
             req.login(userFromDb, (err) => {
-                userFromDb.encryptedPassword = undefined;
-                res.status(200).json({
-                    isLoggedIn: true,
-                    userInfo: userFromDb
-                });
+              userFromDb.encryptedPassword = undefined;
+              res.status(200).json({
+                isLoggedIn: true,
+                userInfo:   userFromDb
+              });
             });
-        })
-        .catch(err => {
+          })
+          .catch( err => {
             console.log('POST /signup ERROR!');
-            console.log(err);
-            if (err.errors) {
-                res.status(400).json(err.errors);
-            } else {
-                res.status(500).json({
-                    error: 'Sign up database error'
-                })
+            console.log( err );
+            if(err.errors) {
+              res.status(400).json(err.errors);
             }
+            else {
+              res.status(500).json({ error: 'Sign up databases error'});
+            }
+          });
         });
-});
 /**
  *  POST /login
  */
@@ -111,7 +107,7 @@ router.delete('/logout', (req, res, next) => {
 router.get('/checklogin', (req, res, next) => {
     if (req.user) {
         req.user.encryptedPassword = undefined;
-        req.status(200).json({
+        res.status(200).json({
             isLoggedIn: true,
             userInfo: req.user
         });
@@ -122,3 +118,5 @@ router.get('/checklogin', (req, res, next) => {
         });
     }
 });
+
+module.exports = router;

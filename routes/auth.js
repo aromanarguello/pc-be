@@ -21,6 +21,7 @@ router.post('/', function (req, res, next) {
             // generate a singed JWT with the contnents of user object and return it in the response
             
             const token = jwt.sign(user, '')
+            return res.json({ user, token })
         })
-    })
+    })(req, res);
 })

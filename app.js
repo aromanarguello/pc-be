@@ -13,12 +13,11 @@ const LocalStrategy = require('passport-local').Strategy;
 require('dotenv').config();
 require('./config/mongoose-setup');
 require('./config/passport-setup');
-require('./config/passport-setup');
 const router = express.Router()
 
 const app = express();
 // default value for title local
-app.locals.title = 'Express - Generated with IronGenerator';
+app.locals.title = 'PC-BE';
 
 // uncomment after placing your favicon in /public
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
@@ -53,9 +52,11 @@ app.use(passport.session());
  */
 const pricesApi = require('./routes/main-router');
 app.use('/api', pricesApi);
+const userApi   = require('./routes/user-router');
+app.use('/api', userApi);
 
 const auth = require('./routes/auth');
-app.use('/auth', auth)
+// app.use('/auth', auth)
 
 /**
  * End Routes
