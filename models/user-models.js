@@ -20,8 +20,12 @@ const userSchema = new Schema(
         },
 
         encryptedPassword: {
-            type: String
-            // required: [true, 'Su Contraseña es requerida.']
+            type: String,
+            required: [true, 'Su Contraseña es requerida.']
+        },
+        encryptedPasswordConf: {
+            type: String,
+            required: [true, 'Su Contraseña es requerida.']            
         }
     }, // END USER SCHEMA
 

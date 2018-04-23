@@ -9,11 +9,12 @@ const app             = express();
  * POST /signup
  */
 router.post('/registrar', (req, res, next)=> {
-    if(req.body.password === undefined ||
-       req.body.password.length < 6){
-       res.status(400).json({ error: 'Password invalid'});
-       return;
-      }
+    if (req.body.password === undefined ||
+        req.body.password.length < 6 &&
+        (req.body.password === req.body.confirmPassword)) {
+        res.status(400).json({ error: 'Password invalid' });
+        return;
+    }
   
       UserModel.findOne({ email: req.body.email })
         .then(userFromDb => {
@@ -23,12 +24,13 @@ router.post('/registrar', (req, res, next)=> {
           }
           const salt              = bcrypt.genSaltSync(10);
           const scrambledPassword = bcrypt.hashSync(req.body.password, salt);
-  
+          const scrambledPasswordConf = bcrypt.hashSync(req.body.password, salt);
           const theUser = new UserModel({
             firstName:         req.body.firstName,
             lastName:          req.body.lastName,
             email:             req.body.email,
-            encryptedPassword: scrambledPassword
+            encryptedPassword: scrambledPassword,
+            encryptedPasswordConf: scrambledPasswordConf
           });
   
           return theUser.save();
