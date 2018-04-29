@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 mongoose.Promise = Promise;
 
-mongoose.connect('mongodb://aroman:Test123!@ds041861.mlab.com:41861/dummy_data')
+mongoose.connect(process.env.MONGODB_URI)
     .then(() => {
         console.log('Mongoose is Connected!!!')
     })

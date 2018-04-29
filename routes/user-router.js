@@ -36,7 +36,7 @@ router.post('/registrar', (req, res, next)=> {
           return theUser.save();
         })
           .then( userFromDb => {
-            var token = jwt.sign({ id: userFromDb._id }, 'asdada', {
+            var token = jwt.sign({ id: userFromDb._id }, process.env.JWT_SECRET, {
                 expiresIn: '24h'
             })
             req.login(userFromDb, (err) => {
@@ -82,10 +82,14 @@ router.post('/login', (req, res, next) => {
                 })
             }
             req.login(userFromDb, (err) => {
+                var token = jwt.sign({ id: userFromDb._id }, process.env.JWT_SECRET, {
+                    expiresIn: '24h'
+                })
                 userFromDb.encryptedPassword = undefined;
                 res.status(200).json({
                     isLoggedIn: true,
-                    userInfo: userFromDb
+                    userInfo: userFromDb,
+                    token: token
                 });
             });
         })
