@@ -1,6 +1,7 @@
 const express         = require('express');
 const bcrypt          = require('bcrypt');
 const UserModel       = require('../models/user-models');
+const jwt             = require('jsonwebtoken');
 const Passport        = require('passport');
 const router          = express.Router();
 const app             = express();
@@ -24,7 +25,7 @@ router.post('/registrar', (req, res, next)=> {
           }
           const salt              = bcrypt.genSaltSync(10);
           const scrambledPassword = bcrypt.hashSync(req.body.password, salt);
-          const scrambledPasswordConf = bcrypt.hashSync(req.body.password, salt);
+          const scrambledPasswordConf = bcrypt.hashSync(req.body.confirmPassword, salt);
           const theUser = new UserModel({
             firstName:         req.body.firstName,
             lastName:          req.body.lastName,
@@ -32,15 +33,18 @@ router.post('/registrar', (req, res, next)=> {
             encryptedPassword: scrambledPassword,
             encryptedPasswordConf: scrambledPasswordConf
           });
-  
           return theUser.save();
         })
           .then( userFromDb => {
+            var token = jwt.sign({ id: userFromDb._id }, 'asdada', {
+                expiresIn: '24h'
+            })
             req.login(userFromDb, (err) => {
               userFromDb.encryptedPassword = undefined;
               res.status(200).json({
                 isLoggedIn: true,
-                userInfo:   userFromDb
+                userInfo:  userFromDb,
+                token: token
               });
             });
           })
