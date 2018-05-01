@@ -55,9 +55,6 @@ app.use('/api', pricesApi);
 const userApi   = require('./routes/user-router');
 app.use('/api', userApi);
 
-const auth = require('./routes/auth');
-// app.use('/auth', auth)
-
 /**
  * End Routes
  */

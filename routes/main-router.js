@@ -5,6 +5,7 @@ const Passport        = require('passport');
 const app             = express();
 const router          = express.Router();
 
+// route with contains data payload for exams
 router.route('/prices')
 .get((req, res) => {
     PriceModel.find().exec().then( priceResults => {

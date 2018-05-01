@@ -9,63 +9,64 @@ const app             = express();
 /** 
  * POST /signup
  */
-router.post('/registrar', (req, res, next)=> {
+router.post('/registrar', (req, res, next) => {
     if (req.body.password === undefined ||
         req.body.password.length < 6 &&
         (req.body.password === req.body.confirmPassword)) {
         res.status(400).json({ error: 'Password invalid' });
         return;
     }
-  
-      UserModel.findOne({ email: req.body.email })
+    UserModel.findOne({ email: req.body.email })
         .then(userFromDb => {
-          if(userFromDb !== null) {
-            res.status(400).json({ error: 'email is taken' });
-            return;
-          }
-          const salt              = bcrypt.genSaltSync(10);
-          const scrambledPassword = bcrypt.hashSync(req.body.password, salt);
-          const scrambledPasswordConf = bcrypt.hashSync(req.body.confirmPassword, salt);
-          const theUser = new UserModel({
-            firstName:         req.body.firstName,
-            lastName:          req.body.lastName,
-            email:             req.body.email,
-            encryptedPassword: scrambledPassword,
-            encryptedPasswordConf: scrambledPasswordConf
-          });
-          return theUser.save();
+            if (userFromDb !== null) {
+                res.status(400).json({ error: 'email is taken' });
+                return;
+            }
+            const salt = bcrypt.genSaltSync(10);
+            const scrambledPassword = bcrypt.hashSync(req.body.password, salt);
+            const scrambledPasswordConf = bcrypt.hashSync(req.body.confirmPassword, salt);
+            const theUser = new UserModel({
+                firstName: req.body.firstName,
+                lastName: req.body.lastName,
+                email: req.body.email,
+                encryptedPassword: scrambledPassword,
+                encryptedPasswordConf: scrambledPasswordConf
+            });
+            return theUser.save();
         })
-          .then( userFromDb => {
+        .then(userFromDb => {
+            // create token with info + secret
             var token = jwt.sign({ id: userFromDb._id }, process.env.JWT_SECRET, {
                 expiresIn: '24h'
             })
             req.login(userFromDb, (err) => {
-              userFromDb.encryptedPassword = undefined;
-              res.status(200).json({
-                isLoggedIn: true,
-                userInfo:  userFromDb,
-                token: token
-              });
+                userFromDb.encryptedPassword = undefined;
+                // login payload including JWT
+                res.status(200).json({
+                    isLoggedIn: true,
+                    userInfo: userFromDb,
+                    token: token
+                });
             });
-          })
-          .catch( err => {
+        })
+        .catch(err => {
             console.log('POST /signup ERROR!');
-            console.log( err );
-            if(err.errors) {
-              res.status(400).json(err.errors);
+            console.log(err);
+            if (err.errors) {
+                res.status(400).json(err.errors);
             }
             else {
-              res.status(500).json({ error: 'Sign up databases error'});
+                res.status(500).json({ error: 'Sign up databases error' });
             }
-          });
         });
+});
 /**
  *  POST /login
  */
 router.post('/login', (req, res, next) => {
     UserModel.findOne({
-            email: req.body.email
-        })
+        email: req.body.email
+    })
         .then(userFromDb => {
             console.log(req.body.email);
             console.log(userFromDb);
