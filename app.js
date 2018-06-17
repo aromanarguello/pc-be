@@ -1,20 +1,13 @@
 const express      = require('express');
-const path         = require('path');
-const favicon      = require('serve-favicon');
 const logger       = require('morgan');
-const cookieParser = require('cookie-parser');
 const bodyParser   = require('body-parser');
 const cors         = require('cors');
-const session      = require('express-session');
-const passport     = require('passport');
-const LocalStrategy = require('passport-local').Strategy;
-
+const userRouter = require('./routes/user-router');
+const morgan = require('morgan');
 
 require('dotenv').config();
 require('./config/mongoose-setup');
-require('./config/passport-setup');
-const router = express.Router()
-
+// require('./config/passport-setup');
 const app = express();
 // default value for title local
 app.locals.title = 'PC-BE';
@@ -30,30 +23,16 @@ app.use(
     origin: [ 'http://localhost:4200', 'http://localhost:3000' ]
   })
 );
+
+app.use(morgan('combined'))
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
-
-
-app.use(
-  session({
-    resave:            true,
-    saveUninitialized: true,
-    secret:            'asdadasd adad'
-  })
-);
-
-app.use(passport.initialize());
-app.use(passport.session());
+userRouter(app);
 
 /**
  * Begin Routes
  */
 const pricesApi = require('./routes/main-router');
 app.use('/api', pricesApi);
-const userApi   = require('./routes/user-router');
-app.use('/api', userApi);
 
 /**
  * End Routes

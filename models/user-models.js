@@ -5,8 +5,8 @@ const Schema = mongoose.Schema;
 const userSchema = new Schema(
     {
         firstName: {
-        type: String,
-        required: [true, 'Su Primer Nombre es requerido.']
+            type: String,
+            required: [true, 'Su Primer Nombre es requerido.']
         },
         
         lastName: {
@@ -16,6 +16,8 @@ const userSchema = new Schema(
 
         email: {
             type: String,
+            lowercase: true,
+            unique: true,
             required: [true, 'Su Correo Electronico es requerido']
         },
         password: {
@@ -44,6 +46,14 @@ userSchema.pre('save', function(next) {
 
     })
 })
+
+userSchema.methods.comparePassword = function(candidatePassword, cb) {
+    bcrypt.compare(candidatePassword, this.password, function(err, isMatch) {
+        if (err) { return cb(err); }
+
+        cb(null, isMatch)
+    })
+}
 
 const UserModel = mongoose.model('User', userSchema)
 
