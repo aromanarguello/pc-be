@@ -5,6 +5,7 @@ const orderObj = new Schema({
     name: String,
     price: Number,
  }, { _id : false })
+
 const orderSchema = new Schema (
     {
         physicianName: String,

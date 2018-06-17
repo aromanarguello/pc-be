@@ -1,133 +1,69 @@
 const express         = require('express');
-const bcrypt          = require('bcrypt');
-const UserModel       = require('../models/user-models');
-const jwt             = require('jsonwebtoken');
-const Passport        = require('passport');
+const jwt = require('jwt-simple');
+const User = require('../models/user-models');
 const router          = express.Router();
-const app             = express();
 
-/** 
- * POST /signup
- */
+function tokenForUser(user) {
+    const timestamp = new Date().getTime()
+    return jwt.encode({ sub: user.id, iat: timestamp }, process.env.JWT_SECRET)
+}
+
 router.post('/registrar', (req, res, next) => {
-    if (req.body.password === undefined ||
-        req.body.password.length < 6 &&
-        (req.body.password === req.body.confirmPassword)) {
-        res.status(400).json({ error: 'Password invalid' });
-        return;
-    }
-    UserModel.findOne({ email: req.body.email })
-        .then(userFromDb => {
-            if (userFromDb !== null) {
-                res.status(400).json({ error: 'email is taken' });
-                return;
-            }
-            const salt = bcrypt.genSaltSync(10);
-            const scrambledPassword = bcrypt.hashSync(req.body.password, salt);
-            const scrambledPasswordConf = bcrypt.hashSync(req.body.confirmPassword, salt);
-            const theUser = new UserModel({
-                firstName: req.body.firstName,
-                lastName: req.body.lastName,
-                email: req.body.email,
-                encryptedPassword: scrambledPassword,
-                encryptedPasswordConf: scrambledPasswordConf
-            });
-            return theUser.save();
-        })
-        .then(userFromDb => {
-            // create token with info + secret
-            var token = jwt.sign({ id: userFromDb._id }, process.env.JWT_SECRET, {
-                expiresIn: '24h'
-            })
-            req.login(userFromDb, (err) => {
-                userFromDb.encryptedPassword = undefined;
-                // login payload including JWT
-                res.status(200).json({
-                    isLoggedIn: true,
-                    userInfo: userFromDb,
-                    token: token
-                });
-            });
-        })
-        .catch(err => {
-            console.log('POST /signup ERROR!');
-            console.log(err);
-            if (err.errors) {
-                res.status(400).json(err.errors);
-            }
-            else {
-                res.status(500).json({ error: 'Sign up databases error' });
-            }
+    const email = req.body.email
+    const password = req.body.password
+    const confirmPassword = req.body.confirmPassword
+    const firstName = req.body.firstName
+    const lastName = req.body.lastName
+
+    if (!email || !password) {
+        return res.status(422).send({ 
+            error: 'Debe ingresar su correo y contraseña'
         });
-});
-/**
- *  POST /login
- */
-router.post('/login', (req, res, next) => {
-    UserModel.findOne({
-        email: req.body.email
+    }
+
+    if(!firstName || !lastName) {
+        return res.status(422).send({
+            error: 'Debe ingresar su Primer Nombre y Apellido'
+        })
+    }
+
+    if (password === undefined ||
+        password.length < 6 ||
+        password.match(/[^a-z0-9]/i) === null ) {
+        return res.status(422).send({
+            error: 'Su contraseña debe tener un minimo de 6 caracteres'
+        });
+    }
+
+    if (password !== confirmPassword ) {
+        return res.status(422).send({
+            error: 'Sus contraseñas deben coincidir'
+        })
+    }
+
+    User.findOne({ email }, function(err, existingUser) {
+        if (err) { return next(err) };
+
+        if (existingUser) {
+            return res.status(400).send({ 
+                error: 'El correo que ha ingresado existe en nuesta base de datos. Debe ingresar un correo electronico unico' });
+        }
+
+        const user = new User({
+            email,
+            password,
+            firstName: req.body.firstName,
+            lastName: req.body.lastName
+        });
+
+        user.save( err => {
+            if (err) { return next(err); }
+        });
+    
+        res.json({ token: tokenForUser(user) });
+    
     })
-        .then(userFromDb => {
-            console.log(req.body.email);
-            console.log(userFromDb);
-            if (userFromDb === null) {
-                res.status(400).json({
-                    error: 'El Correo Electronico es invalido'
-                })
-                return;
-            }
-            const isPassWordgood = bcrypt.compareSync(req.body.password, userFromDb.encryptedPassword);
-            if (isPassWordgood === false) {
-                res.status(400).json({
-                    error: 'La Contraseña es invalida'
-                })
-            }
-            req.login(userFromDb, (err) => {
-                var token = jwt.sign({ id: userFromDb._id }, process.env.JWT_SECRET, {
-                    expiresIn: '24h'
-                })
-                userFromDb.encryptedPassword = undefined;
-                res.status(200).json({
-                    isLoggedIn: true,
-                    userInfo: userFromDb,
-                    token: token
-                });
-            });
-        })
-        .catch(err => {
-            console.log('Post /login ERROR!')
-            console.log(err)
-            res.status(500).json({
-                err: 'Log in database error'
-            });
-        });
-});
-/**
- * DELETE /logout
- */
-router.delete('/logout', (req, res, next) => {
-    req.logout();
-    res.status(200).json({
-        isLoggedIn: false,
-        userInfo: null
-    });
-});
-/**
- * GET /checklogin
- */
-router.get('/checklogin', (req, res, next) => {
-    if (req.user) {
-        req.user.encryptedPassword = undefined;
-        res.status(200).json({
-            isLoggedIn: true,
-            userInfo: req.user
-        });
-    } else {
-        res.status(200).json({
-            isLoggedIn: false,
-            userInfo: null
-        });
-    }
-});
+
+})
 
 module.exports = router;

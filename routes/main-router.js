@@ -14,7 +14,6 @@ router.route('/prices')
 
 router.route('/ordenes')
 .post((req, res, err) => {
-    console.log(req.body)
     const newOrder = new OrderModel(
         {
                 physicianName: req.body.physicianName,
