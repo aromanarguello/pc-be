@@ -1,5 +1,5 @@
-const mongoose = require('mongoose')
-
+const mongoose = require('mongoose');
+const bcrypt = require('bcrypt-nodejs');
 const Schema = mongoose.Schema;
 
 const userSchema = new Schema(
@@ -18,13 +18,9 @@ const userSchema = new Schema(
             type: String,
             required: [true, 'Su Correo Electronico es requerido']
         },
-        encryptedPassword: {
+        password: {
             type: String,
             required: [true, 'Su Contraseña es requerida.']
-        },
-        encryptedPasswordConf: {
-            type: String,
-            required: [true, 'Su Contraseña es requerida.']            
         }
     }, // END USER SCHEMA
 
@@ -32,6 +28,22 @@ const userSchema = new Schema(
         timestamps: true
     } // END TIME STAMPS
 );
+
+userSchema.pre('save', function(next) {
+    const user = this;
+
+    bcrypt.genSalt(10, function(err, salt) {
+        if (err) { return next(err); }
+
+        bcrypt.hash(user.password, salt, null, function(err, hash) {
+            if (err) { return next(err) }
+
+            user.password = hash;
+            next();
+        });
+
+    })
+})
 
 const UserModel = mongoose.model('User', userSchema)
 
