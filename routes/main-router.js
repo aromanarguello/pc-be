@@ -1,5 +1,4 @@
 const express         = require('express');
-const UserModel       = require('../models/user-models');
 const PriceModel      = require('../models/prices-models');
 const OrderModel      = require('../models/order-model');
 const router          = express.Router();
@@ -16,9 +15,9 @@ router.route('/ordenes')
 .post((req, res, err) => {
     const newOrder = new OrderModel(
         {
-                physicianName: req.body.physicianName,
-                patientName: req.body.patientName,
-                order: req.body.order
+            physicianName: req.body.physicianName,
+            patientName: req.body.patientName,
+            order: req.body.order
         }
     );
 
@@ -45,5 +44,6 @@ router.route('/ordenes')
         res.status(200).json(orderResults)
     })
 })
+
 
 module.exports = router;

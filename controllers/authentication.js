@@ -6,6 +6,15 @@ function tokenForUser(user) {
     return jwt.encode({ sub: user.id, iat: timestamp }, process.env.JWT_SECRET)
 }
 
+exports.providerInfo = function(req, res, next) {
+    res.send({
+        id: req.user.id,
+        email: req.user.email,
+        providerFirstName: req.user.firstName,
+        providerLastName: req.user.lastName,
+    })
+}
+
 exports.signin = function(req, res, next) {
     res.send({
         token: tokenForUser(req.user)
