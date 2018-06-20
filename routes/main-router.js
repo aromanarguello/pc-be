@@ -40,7 +40,7 @@ router.route('/ordenes')
 
 router.route('/ordenes')
 .get( (req, res, err) => {
-    OrderModel.find().exec().then( orderResults => {
+    OrderModel.find().sort('created_at').exec().then( orderResults => {
         res.status(200).json(orderResults)
     })
 })

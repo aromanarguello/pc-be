@@ -11,6 +11,9 @@ const orderSchema = new Schema (
         physicianName: String,
         patientName: String,
         order: {type: [orderObj]}
+    }, 
+    { 
+        timestamps: true
     }
 )
 
