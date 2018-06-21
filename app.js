@@ -2,7 +2,7 @@ const express      = require('express');
 const logger       = require('morgan');
 const bodyParser   = require('body-parser');
 const cors         = require('cors');
-const userRouter = require('./routes/user-router');
+const router = require('./routes/router');
 const morgan = require('morgan');
 
 require('dotenv').config();
@@ -26,13 +26,13 @@ app.use(
 
 app.use(morgan('combined'))
 app.use(bodyParser.json());
-userRouter(app);
+router(app);
 
 /**
  * Begin Routes
  */
-const pricesApi = require('./routes/main-router');
-app.use('/api', pricesApi);
+// const pricesApi = require('./routes/main-router');
+// app.use('/api', pricesApi);
 
 /**
  * End Routes

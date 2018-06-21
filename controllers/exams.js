@@ -1,19 +1,17 @@
-const express         = require('express');
-const PriceModel      = require('../models/prices-models');
-const OrderModel      = require('../models/order-model');
-const router          = express.Router();
+const Order = require('../models/order-model');
+const Prices = require('../models/prices-models');
 
-// route with contains data payload for exams
-router.route('/prices')
-.get((req, res) => {
-    PriceModel.find().exec().then( priceResults => {
+exports.prices = function(req, res, next) {
+    Prices
+    .find()
+    .exec()
+    .then( priceResults => {
         res.status(200).json(priceResults)
     })
-})
+}
 
-router.route('/ordenes')
-.post((req, res, err) => {
-    const newOrder = new OrderModel(
+exports.createOrder = function(req, res) {
+    const newOrder = new Order(
         {
             physicianName: req.body.physicianName,
             patientName: req.body.patientName,
@@ -34,16 +32,15 @@ router.route('/ordenes')
                     err: 'Create Order Database Error'
                 });
             }
-        })
-    }
-);
+        }
+    )
+}
 
-router.route('/ordenes')
-.get( (req, res, err) => {
-    OrderModel.find().sort('created_at').exec().then( orderResults => {
+exports.fetchOrder = function(req, res) {
+    Order
+    .find()
+    .exec()
+    .then( orderResults => {
         res.status(200).json(orderResults)
     })
-})
-
-
-module.exports = router;
+}
