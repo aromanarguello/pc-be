@@ -4,6 +4,7 @@ const JwtStrategy = require('passport-jwt').Strategy;
 const ExtractJwt = require('passport-jwt').ExtractJwt;
 const LocalStrategy =  require('passport-local').Strategy;
 require('dotenv').config();
+
 const localOptions = { usernameField: 'email' };
 const localLogin = new LocalStrategy( localOptions, function(email, password, done) {
     User.findOne({ email }, function(err, user) {

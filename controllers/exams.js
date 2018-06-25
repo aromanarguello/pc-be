@@ -39,6 +39,8 @@ exports.createOrder = function(req, res) {
 exports.fetchOrder = function(req, res) {
     Order
     .find()
+    .sort({createdAt: -1})
+    .limit(12)
     .exec()
     .then( orderResults => {
         res.status(200).json(orderResults)
